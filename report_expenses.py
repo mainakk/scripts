@@ -15,7 +15,7 @@ data.sort()
 
 headings = {
     'Income': ['Salary'],
-    'Expenses': ['Accommodation', 'Telecom', 'Online services', 'Transport', 'Grocery', 'Household items', 'Restaurants', 'Laundry', 'Activities', 'Investment', 'Others']
+    'Expenses': ['Accommodation', 'Telecom', 'Online services', 'Transport', 'Grocery', 'Household items', 'Restaurants', 'Laundry', 'Activities', 'Others']
 }
 col_width = max(max(len(y) for y in x) for x in headings.values())
 
