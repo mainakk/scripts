@@ -14,8 +14,9 @@ data.sort()
 #pprint(data, width=100)
 
 headings = {
-    'Income': ['Salary'],
-    'Expenses': ['Accommodation', 'Telecom', 'Online services', 'Transport', 'Grocery', 'Household items', 'Restaurants', 'Laundry', 'Activities', 'Others']
+    'Income': ['Salary', 'Reimbursement'],
+    'Expenses': ['Tax', 'Accommodation', 'Telecom', 'Online services', 'Transport', 'Grocery', 'Household items', 'Restaurants', 'Laundry', 'Activities', 'Others'],
+    'Expenses/Income': ['(%)']
 }
 col_width = max(max(len(y) for y in x) for x in headings.values())
 
@@ -26,12 +27,14 @@ def write_top_heading_line(f):
     f.write(f"+-{'-' * col_width}-")
     f.write(f"+{'-' * ((col_width + 3) * (len(headings['Income']) + 1) - 1)}")
     f.write(f"+{'-' * ((col_width + 3) * (len(headings['Expenses']) + 1) - 1)}")
+    f.write(f"+{'-' * ((col_width + 3) * len(headings['Expenses/Income']) - 1)}")
     f.write('+\n')
 
 def write_top_heading(f):
     f.write(f"| {'':>{col_width}} ")
     f.write(f"|{'Income':^{(col_width + 3) * (len(headings['Income']) + 1) - 1}}")
     f.write(f"|{'Expenses':^{(col_width + 3) * (len(headings['Expenses']) + 1) - 1}}")
+    f.write(f"|{'Expenses/Income':^{(col_width + 3) * len(headings['Expenses/Income']) - 1}}")
     f.write('|\n')
 
 def write_item_heading(f, period):
@@ -41,8 +44,10 @@ def write_item_heading(f, period):
     f.write(f"| {'Total':^{col_width}} ")
     for e in headings['Expenses']:
         f.write(f"| {e:^{col_width}} ")
-    f.write(f"| {'Total':^{col_width}} |")
-    f.write('\n')
+    f.write(f"| {'Total':^{col_width}} ")
+    for r in headings['Expenses/Income']:
+        f.write(f"| {r:^{col_width}} ")
+    f.write('|\n')
 
 def write_item_heading_line(f):
     f.write(f"+-{'-' * col_width}-")
@@ -51,24 +56,28 @@ def write_item_heading_line(f):
     f.write(f"+-{'-' * col_width}-")
     for _ in headings['Expenses']:
         f.write(f"+-{'-' * col_width}-")
-    f.write(f"+-{'-' * col_width}-+")
-    f.write('\n')
+    f.write(f"+-{'-' * col_width}-")
+    for _ in headings['Expenses/Income']:
+        f.write(f"+-{'-' * col_width}-")
+    f.write('+\n')
 
 def write_data(f, freq, dtstart, dtfmt, dtattr):
     for dt in rrule.rrule(freq=freq, dtstart=dtstart, until=end_date):
         f.write(f"| {dt.strftime(dtfmt):>{col_width}} ")
-        ss = 0
+        ss_i = 0
         for i in headings['Income']:
             s = sum([x[2] for x in data if x[1] == i and getattr(x[0], dtattr) == getattr(dt, dtattr)])
             f.write(f"| {f'${s:.2f}':>{col_width}} ")
-            ss += s
-        f.write(f"| {f'${ss:.2f}':>{col_width}} ")
-        ss = 0
+            ss_i += s
+        f.write(f"| {f'${ss_i:.2f}':>{col_width}} ")
+        ss_e = 0
         for e in headings['Expenses']:
             s = sum([x[2] for x in data if x[1] == e and getattr(x[0], dtattr) == getattr(dt, dtattr)])
             f.write(f"| {f'${s:.2f}':>{col_width}} ")
-            ss += s
-        f.write(f"| {f'${ss:.2f}':>{col_width}} ")
+            ss_e += s
+        f.write(f"| {f'${ss_e:.2f}':>{col_width}} ")
+        r = ss_e / ss_i * 100 if ss_i > 0 else 0.
+        f.write(f"| {f'{r:.2f}%':>{col_width}} ")
         f.write('|\n')
 
 with open('Monthly Report.txt', 'w') as f:
